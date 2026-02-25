@@ -1,13 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 140">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#1e1612;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#2a1f18;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#1a0a00;stop-opacity:1" />
+      <stop offset="60%" style="stop-color:#2d1506;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1a0a00;stop-opacity:1" />
     </linearGradient>
   </defs>
 
   <rect width="800" height="140" rx="12" fill="url(#bg)"/>
 
+  <!-- Snoo glow -->
+  <circle cx="78" cy="70" r="68" fill="#FF4500" opacity="0.15"/>
   <!-- Snoo icon -->
   <circle cx="78" cy="70" r="52" fill="#FF4500"/>
   <g transform="translate(78,70) scale(0.38) translate(-128,-128)">
