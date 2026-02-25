@@ -70,85 +70,97 @@ func (tm *ToolsManager) AddTools() {
 
 	// get_trending_posts - Get trending posts from one or more subreddits
 	tool := mcp.NewTool("get_trending_posts",
-		mcp.WithDescription("Get trending posts from one or more subreddits, sorted by custom trend score (velocity × engagement). Results include trend_score so you can rank across subreddits."),
+		mcp.WithDescription(`Get trending posts from a list of known subreddits, merged and sorted by trend_score (velocity × engagement).
+Use this when you already know which communities are relevant.
+Always use jq_filter to avoid burning context — recommended: '[.[:20] | .[] | {title, subreddit, score, trend_score, permalink}]'
+For topic discovery first, use get_crossover_communities to find the right subreddits, then call this.`),
 		mcp.WithArray("subreddits",
 			mcp.Required(),
-			mcp.Description("List of subreddit names to fetch (e.g. ['kubernetes', 'golang', 'devops'])"),
+			mcp.Description("List of subreddit names (without r/). E.g. ['kubernetes', 'golang', 'devops']"),
 		),
 		mcp.WithString("time_range",
-			mcp.Description("Time range for top posts: hour, day, week, month, year, all (default: day)"),
+			mcp.Description("Time range: hour, day, week, month, year, all (default: day)"),
 		),
 		mcp.WithNumber("limit",
-			mcp.Description("Posts per subreddit (default: 10, max: 100)"),
+			mcp.Description("Posts per subreddit (default: 10, max: 100). Keep low (5-10) to save tokens."),
 		),
 		mcp.WithString("jq_filter",
-			mcp.Description("Optional jq filter to reduce output. E.g. '[.[] | {title, score, subreddit, trend_score}]'"),
+			mcp.Description("jq filter to reduce output. Always provide this. Recommended: '[.[:20] | .[] | {title, subreddit, score, trend_score, permalink}]'"),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetTrendingPosts)
 
 	// get_subreddit_pulse - Current state of a community
 	tool = mcp.NewTool("get_subreddit_pulse",
-		mcp.WithDescription("Get the current pulse of a subreddit: top posts by hot/new/top/rising with trend scores. Useful for understanding what's active in a specific community right now."),
+		mcp.WithDescription(`Get the current state of a specific subreddit: top posts sorted by hot/new/top/rising with trend scores.
+Use this to deep-dive into a single community after discovering it.
+Always use jq_filter. Recommended: '[.[:10] | .[] | {title, score, num_comments, trend_score, permalink}]'`),
 		mcp.WithString("subreddit",
 			mcp.Required(),
 			mcp.Description("Subreddit name (without r/)"),
 		),
 		mcp.WithString("sort",
-			mcp.Description("Sort order: hot, new, top, rising (default: hot)"),
+			mcp.Description("Sort: hot (default), new, top, rising"),
 		),
 		mcp.WithString("time_range",
 			mcp.Description("Time range when sort=top: hour, day, week, month, year, all (default: day)"),
 		),
 		mcp.WithNumber("limit",
-			mcp.Description("Number of posts (default: 25, max: 100)"),
+			mcp.Description("Number of posts (default: 25, max: 100). Keep at 10-15 to save tokens."),
 		),
 		mcp.WithString("jq_filter",
-			mcp.Description("Optional jq filter to reduce output. E.g. '[.[] | {title, score, num_comments, url}]'"),
+			mcp.Description("jq filter to reduce output. Always provide this. Recommended: '[.[:10] | .[] | {title, score, num_comments, trend_score, permalink}]'"),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetSubredditPulse)
 
 	// search_posts - Search posts globally or within a subreddit
 	tool = mcp.NewTool("search_posts",
-		mcp.WithDescription("Search Reddit posts by keyword, globally or within a specific subreddit. Returns posts sorted by relevance or hot, with trend scores."),
+		mcp.WithDescription(`Search Reddit posts by keyword. Works globally or restricted to a subreddit.
+Use this for specific queries or to find posts about a precise topic.
+Always use jq_filter. Recommended: '[.[:10] | .[] | {title, subreddit, score, trend_score, permalink}]'
+For broad topic discovery across multiple subjects, prefer get_topic_trends instead.`),
 		mcp.WithString("query",
 			mcp.Required(),
-			mcp.Description("Search query"),
+			mcp.Description("Search query. Supports Reddit operators like 'golang site:github.com' or 'kubernetes OR k8s'"),
 		),
 		mcp.WithString("subreddit",
 			mcp.Description("Optional: restrict search to this subreddit"),
 		),
 		mcp.WithString("sort",
-			mcp.Description("Sort: relevance, hot, top, new, comments (default: hot)"),
+			mcp.Description("Sort: relevance, hot, top (default: hot)"),
 		),
 		mcp.WithString("time_range",
 			mcp.Description("Time range: hour, day, week, month, year, all (default: week)"),
 		),
 		mcp.WithNumber("limit",
-			mcp.Description("Number of results (default: 25, max: 100)"),
+			mcp.Description("Number of results (default: 25, max: 100). Keep at 10-15 to save tokens."),
 		),
 		mcp.WithString("jq_filter",
-			mcp.Description("Optional jq filter. E.g. '[.[] | {title, subreddit, score, url}]'"),
+			mcp.Description("jq filter to reduce output. Always provide this. Recommended: '[.[:10] | .[] | {title, subreddit, score, trend_score, permalink}]'"),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolSearchPosts)
 
 	// get_rising_posts - Posts rising in r/all right now
 	tool = mcp.NewTool("get_rising_posts",
-		mcp.WithDescription("Get posts currently rising across all of Reddit (r/all/rising). These are posts gaining momentum fast — good signal for what's about to trend."),
+		mcp.WithDescription(`Get posts currently gaining momentum in r/all/rising — early signal of what's about to trend.
+This is cross-subreddit and real-time. No topic filter, so use jq_filter to focus on what matters.
+Always use jq_filter. Recommended: '[.[:15] | .[] | {title, subreddit, score, trend_score, permalink}]'`),
 		mcp.WithNumber("limit",
 			mcp.Description("Number of posts (default: 25, max: 100)"),
 		),
 		mcp.WithString("jq_filter",
-			mcp.Description("Optional jq filter. E.g. '[.[] | {title, subreddit, score, url}]'"),
+			mcp.Description("jq filter to reduce output. Always provide this. Recommended: '[.[:15] | .[] | {title, subreddit, score, trend_score, permalink}]'"),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetRisingPosts)
 
-	// discover_communities - Find subreddits for a topic
+	// discover_communities - Find subreddits for a single topic
 	tool = mcp.NewTool("discover_communities",
-		mcp.WithDescription("Find the most relevant subreddits for a given topic. Returns communities sorted by subscriber count with description for relevance validation."),
+		mcp.WithDescription(`Find subreddits related to a single topic, sorted by subscriber count.
+Use this to explore where a topic lives on Reddit.
+For multiple topics at once, use get_crossover_communities instead — it's more efficient and ranks by cross-topic relevance.`),
 		mcp.WithString("topic",
 			mcp.Required(),
 			mcp.Description("Topic to search for (e.g. 'kubernetes', 'machine learning', 'golang')"),
@@ -161,20 +173,26 @@ func (tm *ToolsManager) AddTools() {
 
 	// get_crossover_communities - Subreddits covering multiple topics
 	tool = mcp.NewTool("get_crossover_communities",
-		mcp.WithDescription("Find subreddits that cover multiple topics at once. A subreddit appearing for 3 topics is more valuable than one appearing for 1. Results are ranked by topic overlap count, then subscriber count."),
+		mcp.WithDescription(`Find subreddits that appear across multiple topics at once.
+A subreddit with hit_count=3 covers 3 of your topics — it's the most valuable one to monitor.
+Results sorted by hit_count desc, then subscribers desc.
+Ideal first step when researching multiple topics: call this, then feed the top subreddits into get_trending_posts.
+Recommended flow: get_crossover_communities → get_trending_posts with jq_filter.`),
 		mcp.WithArray("topics",
 			mcp.Required(),
-			mcp.Description("List of topics to cross-reference (e.g. ['kubernetes', 'devops', 'golang'])"),
+			mcp.Description("List of topics to cross-reference (e.g. ['kubernetes', 'devops', 'golang', 'AI'])"),
 		),
 		mcp.WithNumber("limit_per_topic",
-			mcp.Description("Communities to search per topic (default: 10)"),
+			mcp.Description("Communities to search per topic (default: 10). Keep at 5-10."),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetCrossoverCommunities)
 
 	// get_subreddit_info - Info and stats about a subreddit
 	tool = mcp.NewTool("get_subreddit_info",
-		mcp.WithDescription("Get detailed info and stats about a specific subreddit: subscribers, active users, description, etc. Useful to validate if a community is relevant before diving in."),
+		mcp.WithDescription(`Get stats about a subreddit: subscribers, active users right now, description, NSFW flag.
+Use this to validate a community before committing API calls to it.
+Active users (active_user_count) is the best signal of real-time activity.`),
 		mcp.WithString("subreddit",
 			mcp.Required(),
 			mcp.Description("Subreddit name (without r/)"),
@@ -184,32 +202,38 @@ func (tm *ToolsManager) AddTools() {
 
 	// get_topic_trends - Search Reddit globally for multiple topics
 	tool = mcp.NewTool("get_topic_trends",
-		mcp.WithDescription("Search Reddit globally for one or more topics and return top posts per topic sorted by trend score. Useful to quickly compare what's being said about multiple subjects across the whole platform."),
+		mcp.WithDescription(`Search Reddit globally for multiple topics at once and return top posts per topic sorted by trend_score.
+This is the fastest way to get a broad overview of what's being discussed about several subjects.
+Always use jq_filter to avoid huge output. Recommended: '[.[] | {topic, posts: [.posts[:3] | .[] | {title, score, trend_score, subreddit}]}]'
+For higher quality results (real community context), use get_crossover_communities + get_trending_posts instead.`),
 		mcp.WithArray("topics",
 			mcp.Required(),
-			mcp.Description("List of topics to search (e.g. ['kubernetes', 'golang', 'AI'])"),
+			mcp.Description("List of topics to search globally (e.g. ['kubernetes', 'golang', 'AI agents'])"),
 		),
 		mcp.WithString("time_range",
 			mcp.Description("Time range: hour, day, week, month, year, all (default: week)"),
 		),
 		mcp.WithNumber("limit",
-			mcp.Description("Posts per topic (default: 10, max: 100)"),
+			mcp.Description("Posts per topic (default: 10, max: 100). Keep at 5-10 to save tokens."),
 		),
 		mcp.WithString("jq_filter",
-			mcp.Description("Optional jq filter to reduce output. E.g. '[.[] | {topic, posts: [.posts[] | {title, score, trend_score}]}]'"),
+			mcp.Description("jq filter to reduce output. Always provide this. Recommended: '[.[] | {topic, posts: [.posts[:3] | .[] | {title, score, trend_score, subreddit}]}]'"),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetTopicTrends)
 
 	// analyze_sentiment_trend - Compare topic momentum over time
 	tool = mcp.NewTool("analyze_sentiment_trend",
-		mcp.WithDescription("Compare top posts about a topic from the last 24h vs the last N days. Returns avg score, comments, trend score and whether the topic is gaining or losing momentum. Good for deciding if now is a good time to post about something."),
+		mcp.WithDescription(`Compare how a topic is performing now (last 24h) vs the last N days.
+Returns avg_score, avg_comments, avg_trend_score for both periods, top 5 posts each, and a trending_up boolean.
+Use this to decide if now is a good moment to post about a topic, or to detect if interest is rising or fading.
+Output is already compact — no jq_filter needed.`),
 		mcp.WithString("topic",
 			mcp.Required(),
 			mcp.Description("Topic to analyze"),
 		),
 		mcp.WithNumber("days",
-			mcp.Description("Number of days to compare against (default: 7)"),
+			mcp.Description("Days to compare against (default: 7). Use 30 for monthly trend."),
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolAnalyzeSentimentTrend)
