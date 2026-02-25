@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 160">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#16213e;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redditGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6314;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF4500;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="160" rx="12" fill="url(#bg)"/>
+
+  <!-- Reddit alien (Snoo) simplified icon -->
+  <g transform="translate(60, 80)">
+    <!-- Body circle -->
+    <circle cx="0" cy="12" r="28" fill="url(#redditGrad)"/>
+    <!-- Head circle -->
+    <circle cx="0" cy="-18" r="22" fill="url(#redditGrad)"/>
+    <!-- Antenna -->
+    <line x1="0" y1="-40" x2="12" y2="-52" stroke="#FF6314" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="14" cy="-54" r="5" fill="#FF6314"/>
+    <!-- Eyes -->
+    <circle cx="-7" cy="-20" r="4" fill="white"/>
+    <circle cx="7" cy="-20" r="4" fill="white"/>
+    <circle cx="-6" cy="-20" r="2" fill="#FF4500"/>
+    <circle cx="8" cy="-20" r="2" fill="#FF4500"/>
+    <!-- Smile -->
+    <path d="M -8 -10 Q 0 -4 8 -10" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Ears -->
+    <circle cx="-22" cy="-18" r="6" fill="url(#redditGrad)"/>
+    <circle cx="22" cy="-18" r="6" fill="url(#redditGrad)"/>
+    <circle cx="-22" cy="-18" r="3" fill="#FF8C5A"/>
+    <circle cx="22" cy="-18" r="3" fill="#FF8C5A"/>
+    <!-- Arms -->
+    <path d="M -28 8 Q -42 0 -38 -8" stroke="url(#redditGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M 28 8 Q 42 0 38 -8" stroke="url(#redditGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Legs -->
+    <path d="M -12 38 Q -16 52 -10 58" stroke="url(#redditGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M 12 38 Q 16 52 10 58" stroke="url(#redditGrad)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Title -->
+  <text x="145" y="72" font-family="'Segoe UI', system-ui, sans-serif" font-size="42" font-weight="700" fill="white" letter-spacing="-1">Reddit</text>
+  <text x="145" y="72" font-family="'Segoe UI', system-ui, sans-serif" font-size="42" font-weight="700" fill="url(#redditGrad)" letter-spacing="-1" dx="145"> MCP</text>
+
+  <!-- Subtitle -->
+  <text x="145" y="102" font-family="'Segoe UI', system-ui, sans-serif" font-size="16" fill="#8892b0" letter-spacing="0.5">Trend intelligence for AI assistants · No auth required</text>
+
+  <!-- MCP badge -->
+  <rect x="145" y="116" width="130" height="26" rx="5" fill="#FF4500" opacity="0.15"/>
+  <text x="210" y="134" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" fill="#FF6314" text-anchor="middle" font-weight="600">Model Context Protocol</text>
+
+  <!-- Go badge -->
+  <rect x="285" y="116" width="60" height="26" rx="5" fill="#00ADD8" opacity="0.15"/>
+  <text x="315" y="134" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" fill="#00ADD8" text-anchor="middle" font-weight="600">Go 1.24+</text>
+
+  <!-- No auth badge -->
+  <rect x="355" y="116" width="80" height="26" rx="5" fill="#64ffda" opacity="0.1"/>
+  <text x="395" y="134" font-family="'Segoe UI', system-ui, sans-serif" font-size="12" fill="#64ffda" text-anchor="middle" font-weight="600">No Auth</text>
+
+  <!-- Decorative dots -->
+  <circle cx="720" cy="40" r="60" fill="#FF4500" opacity="0.04"/>
+  <circle cx="760" cy="130" r="40" fill="#FF6314" opacity="0.05"/>
+</svg>
