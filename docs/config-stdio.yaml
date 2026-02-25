@@ -1,0 +1,8 @@
+server:
+  name: "reddit-mcp"
+  version: "0.1.0"
+  transport:
+    type: "stdio"
+
+reddit:
+  user_agent: "MCP-TrendBot/1.0 (by /u/achetronic)"

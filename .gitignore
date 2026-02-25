@@ -1,0 +1,11 @@
+main
+*.exe
+bin/
+
+.idea/
+.vscode/
+.cursor/
+.claude/
+.aider/
+.copilot/
+# Note: .agents/ is intentionally tracked

@@ -1,0 +1,10 @@
+server:
+  name: "reddit-mcp"
+  version: "0.1.0"
+  transport:
+    type: "http"
+    http:
+      host: ":8080"
+
+reddit:
+  user_agent: "MCP-TrendBot/1.0 (by /u/achetronic)"
