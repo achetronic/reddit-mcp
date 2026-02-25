@@ -117,3 +117,4 @@ If the filter is invalid, the tool falls back to full unfiltered output — no e
 1. Release notes must always be written in **English**
 2. Plain language — no corporate speak, no jargon
 3. Always document the recommended `jq_filter` in tool descriptions
+4. Commits are authored as **Magec** (`magec@magec.dev`) — this repo is maintained by the AI agent
