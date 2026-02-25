@@ -50,19 +50,18 @@ func NewClient(userAgent string) *Client {
 
 // Post represents a Reddit post with relevant fields
 type Post struct {
-	ID           string  `json:"id"`
-	Title        string  `json:"title"`
-	Subreddit    string  `json:"subreddit"`
-	Author       string  `json:"author"`
-	Score        int     `json:"score"`
-	NumComments  int     `json:"num_comments"`
-	UpvoteRatio  float64 `json:"upvote_ratio"`
-	URL          string  `json:"url"`
-	Permalink    string  `json:"permalink"`
-	SelfText     string  `json:"selftext,omitempty"`
-	CreatedUTC   float64 `json:"created_utc"`
-	TrendScore   float64 `json:"trend_score,omitempty"`
-	IsSelf       bool    `json:"is_self"`
+	ID          string  `json:"id"`
+	Title       string  `json:"title"`
+	Subreddit   string  `json:"subreddit"`
+	Author      string  `json:"author"`
+	Score       int     `json:"score"`
+	NumComments int     `json:"num_comments"`
+	UpvoteRatio float64 `json:"upvote_ratio"`
+	URL         string  `json:"url"`
+	Permalink   string  `json:"permalink"`
+	CreatedUTC  float64 `json:"created_utc"`
+	TrendScore  float64 `json:"trend_score,omitempty"`
+	IsSelf      bool    `json:"is_self"`
 }
 
 // SubredditInfo represents info about a subreddit
@@ -342,4 +341,115 @@ func (c *Client) GetCrossoverCommunities(topics []string, limitPerTopic int) ([]
 	})
 
 	return result, nil
+}
+
+// TrendingByTopicResult holds the result for a single topic in GetTrendingByTopic
+type TrendingByTopicResult struct {
+	Topic string `json:"topic"`
+	Posts []Post `json:"posts"`
+}
+
+// GetTrendingByTopic searches Reddit globally for multiple topics and returns
+// top posts per topic sorted by trend score
+func (c *Client) GetTrendingByTopic(topics []string, timeRange string, limit int) ([]TrendingByTopicResult, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 25
+	}
+	var results []TrendingByTopicResult
+	for _, topic := range topics {
+		posts, err := c.SearchPosts(topic, "", "top", timeRange, limit)
+		if err != nil {
+			continue
+		}
+		sort.Slice(posts, func(i, j int) bool {
+			return posts[i].TrendScore > posts[j].TrendScore
+		})
+		results = append(results, TrendingByTopicResult{
+			Topic: topic,
+			Posts: posts,
+		})
+	}
+	return results, nil
+}
+
+// SentimentSnapshot holds a snapshot of posts at a point in time
+type SentimentSnapshot struct {
+	Period      string  `json:"period"`
+	PostCount   int     `json:"post_count"`
+	AvgScore    float64 `json:"avg_score"`
+	AvgComments float64 `json:"avg_comments"`
+	AvgTrend    float64 `json:"avg_trend_score"`
+	TopPosts    []Post  `json:"top_posts"`
+}
+
+// SentimentCompare holds the comparison between recent and historical posts
+type SentimentCompare struct {
+	Topic      string            `json:"topic"`
+	Recent     SentimentSnapshot `json:"recent"`
+	Historical SentimentSnapshot `json:"historical"`
+	Trending   bool              `json:"trending_up"`
+}
+
+// AnalyzeSentimentTrend compares top posts from the last 24h vs the previous N days
+func (c *Client) AnalyzeSentimentTrend(topic string, days int) (*SentimentCompare, error) {
+	if days <= 0 {
+		days = 7
+	}
+
+	recentPosts, err := c.SearchPosts(topic, "", "top", "day", 25)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch recent posts: %w", err)
+	}
+
+	timeRange := "week"
+	if days > 7 {
+		timeRange = "month"
+	}
+	historicalPosts, err := c.SearchPosts(topic, "", "top", timeRange, 25)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch historical posts: %w", err)
+	}
+
+	return &SentimentCompare{
+		Topic:      topic,
+		Recent:     snapshotFromPosts("last_24h", recentPosts),
+		Historical: snapshotFromPosts(fmt.Sprintf("last_%dd", days), historicalPosts),
+		Trending:   avgTrendScore(recentPosts) > avgTrendScore(historicalPosts),
+	}, nil
+}
+
+func snapshotFromPosts(period string, posts []Post) SentimentSnapshot {
+	if len(posts) == 0 {
+		return SentimentSnapshot{Period: period}
+	}
+	var totalScore, totalComments, totalTrend float64
+	for _, p := range posts {
+		totalScore += float64(p.Score)
+		totalComments += float64(p.NumComments)
+		totalTrend += p.TrendScore
+	}
+	n := float64(len(posts))
+	top := posts
+	if len(top) > 5 {
+		top = top[:5]
+	}
+	return SentimentSnapshot{
+		Period:      period,
+		PostCount:   len(posts),
+		AvgScore:    totalScore / n,
+		AvgComments: totalComments / n,
+		AvgTrend:    totalTrend / n,
+		TopPosts:    top,
+	}
+}
+
+func avgTrendScore(posts []Post) float64 {
+	if len(posts) == 0 {
+		return 0
+	}
+	var total float64
+	for _, p := range posts {
+		total += p.TrendScore
+	}
+	return total / float64(len(posts))
 }

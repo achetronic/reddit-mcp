@@ -193,3 +193,49 @@ func (tm *ToolsManager) HandleToolGetSubredditInfo(ctx context.Context, request 
 	}
 	return mcp.NewToolResultText(output), nil
 }
+
+// HandleToolGetTopicTrends handles the get_topic_trends tool
+func (tm *ToolsManager) HandleToolGetTopicTrends(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args := getArgs(request)
+	topics := getStringSlice(args, "topics")
+	timeRange := getString(args, "time_range", "week")
+	limit := getInt(args, "limit", 10)
+	jqFilter := getString(args, "jq_filter", "")
+
+	if len(topics) == 0 {
+		return mcp.NewToolResultError("topics is required"), nil
+	}
+
+	results, err := tm.dependencies.RedditClient.GetTrendingByTopic(topics, timeRange, limit)
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+
+	output, err := applyJQ(results, jqFilter)
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+	return mcp.NewToolResultText(output), nil
+}
+
+// HandleToolAnalyzeSentimentTrend handles the analyze_sentiment_trend tool
+func (tm *ToolsManager) HandleToolAnalyzeSentimentTrend(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args := getArgs(request)
+	topic := getString(args, "topic", "")
+	days := getInt(args, "days", 7)
+
+	if topic == "" {
+		return mcp.NewToolResultError("topic is required"), nil
+	}
+
+	result, err := tm.dependencies.RedditClient.AnalyzeSentimentTrend(topic, days)
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+
+	output, err := applyJQ(result, "")
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+	return mcp.NewToolResultText(output), nil
+}

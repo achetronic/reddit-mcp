@@ -181,4 +181,36 @@ func (tm *ToolsManager) AddTools() {
 		),
 	)
 	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetSubredditInfo)
+
+	// get_topic_trends - Search Reddit globally for multiple topics
+	tool = mcp.NewTool("get_topic_trends",
+		mcp.WithDescription("Search Reddit globally for one or more topics and return top posts per topic sorted by trend score. Useful to quickly compare what's being said about multiple subjects across the whole platform."),
+		mcp.WithArray("topics",
+			mcp.Required(),
+			mcp.Description("List of topics to search (e.g. ['kubernetes', 'golang', 'AI'])"),
+		),
+		mcp.WithString("time_range",
+			mcp.Description("Time range: hour, day, week, month, year, all (default: week)"),
+		),
+		mcp.WithNumber("limit",
+			mcp.Description("Posts per topic (default: 10, max: 100)"),
+		),
+		mcp.WithString("jq_filter",
+			mcp.Description("Optional jq filter to reduce output. E.g. '[.[] | {topic, posts: [.posts[] | {title, score, trend_score}]}]'"),
+		),
+	)
+	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolGetTopicTrends)
+
+	// analyze_sentiment_trend - Compare topic momentum over time
+	tool = mcp.NewTool("analyze_sentiment_trend",
+		mcp.WithDescription("Compare top posts about a topic from the last 24h vs the last N days. Returns avg score, comments, trend score and whether the topic is gaining or losing momentum. Good for deciding if now is a good time to post about something."),
+		mcp.WithString("topic",
+			mcp.Required(),
+			mcp.Description("Topic to analyze"),
+		),
+		mcp.WithNumber("days",
+			mcp.Description("Number of days to compare against (default: 7)"),
+		),
+	)
+	tm.dependencies.McpServer.AddTool(tool, tm.HandleToolAnalyzeSentimentTrend)
 }
