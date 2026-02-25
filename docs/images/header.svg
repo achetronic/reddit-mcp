@@ -19,7 +19,7 @@
   <text x="305" y="58" font-family="'Segoe UI', system-ui, sans-serif" font-size="46" font-weight="800" fill="#FF4500" letter-spacing="-1"> MCP</text>
 
   <!-- Tagline -->
-  <text x="154" y="90" font-family="'Segoe UI', system-ui, sans-serif" font-size="15" fill="#a78bfa" letter-spacing="0.2">Give your AI a window into what Reddit is talking about right now.</text>
+  <text x="154" y="90" font-family="'Segoe UI', system-ui, sans-serif" font-size="15" fill="#a78bfa" letter-spacing="0.2">A window into what Reddit is talking about right now.</text>
 
   <!-- Subtle glow -->
   <circle cx="730" cy="30" r="80" fill="#FF4500" opacity="0.04"/>
