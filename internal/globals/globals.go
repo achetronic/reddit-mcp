@@ -19,15 +19,33 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"regexp"
+	"strings"
+
 	"reddit-mcp/api"
 	"reddit-mcp/internal/config"
 )
 
 type ApplicationContext struct {
-	Context context.Context
-	Logger  *slog.Logger
-	Config  *api.Configuration
+	Context    context.Context
+	Logger     *slog.Logger
+	Config     *api.Configuration
+	ToolPrefix string
 }
+
+var nonAlphanumRe = regexp.MustCompile(`[^a-z0-9]+`)
+
+func SanitizeToolPrefix(name string) string {
+	s := strings.ToLower(strings.TrimSpace(name))
+	s = nonAlphanumRe.ReplaceAllString(s, "_")
+	s = strings.Trim(s, "_")
+	if s == "" {
+		return ""
+	}
+	return s + "_"
+}
+
+const defaultServerName = "reddit-mcp"
 
 func NewApplicationContext() (*ApplicationContext, error) {
 	appCtx := &ApplicationContext{
@@ -43,6 +61,11 @@ func NewApplicationContext() (*ApplicationContext, error) {
 		return appCtx, err
 	}
 	appCtx.Config = &configContent
+	serverName := configContent.Server.Name
+	if serverName == "" {
+		serverName = defaultServerName
+	}
+	appCtx.ToolPrefix = SanitizeToolPrefix(serverName)
 
 	return appCtx, nil
 }
